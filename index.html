@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium News Poster Generator</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        :root {
+            --brand-blue: #76B5E1;
+            --brand-white: #FFFFFF;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --poster-scale: 1;
+        }
+
+        @media (max-width: 600px) { :root { --poster-scale: 0.55; } }
+        @media (min-width: 601px) and (max-width: 991px) { :root { --poster-scale: 0.75; } }
+        @media (min-width: 992px) { :root { --poster-scale: 0/9; } }
+        @media (min-width: 992px) and (max-height: 850px) { :root { --poster-scale: 0.75; } }
+        @media (min-width: 992px) and (max-height: 750px) { :root { --poster-scale: 0.65; } }
+        @media (min-width: 992px) and (max-height: 650px) { :root { --poster-scale: 0.75; } }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--brand-white);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .studio-header {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--bg-dark);
+            z-index: 100;
+        }
+
+        .studio-header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+
+        .jamii-text { color: var(--brand-blue); font-weight: 800; }
+        .talk-text { color: var(--brand-white); font-weight: 800; }
+        .studio-text { color: var(--brand-white); font-weight: 400; }
+
+        .main-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            border-right: 2px solid var(--bg-dark);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 0;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--brand-blue);
+        }
+
+        .controls {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--brand-blue);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            color: var(--brand-white);
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            resize: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--brand-blue);
+        }
+
+        .custom-file-upload {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 2px dashed #3a3a3a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+        }
+
+        .custom-file-upload:hover {
+            border-color: var(--brand-blue);
+            color: var(--brand-blue);
+            background: rgba(118, 181, 225, 0.05);
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .workspace-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-dark);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .poster-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .poster-scale-wrapper {
+            width: calc(500px * var(--poster-scale));
+            height: calc(625px * var(--poster-scale));
+            position: relative;
+            margin: auto;
+            flex-shrink: 0;
+        }
+
+        #poster-container {
+            width: 500px;
+            height: 625px;
+            background: #000;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            border-radius: 4px;
+            transform: scale(var(--poster-scale));
+            transform-origin: top left;
+        }
+
+        #bg-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 10;
+        }
+
+        .logo-container img {
+            height: 45px;
+            display: block;
+        }
+
+        .source-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+        .source-rect-large {
+            background: var(--brand-blue);
+            width: 80px;
+            height: 25px;
+            position: relative;
+        }
+
+        .source-rect-small {
+            background: var(--brand-white);
+            color: #000;
+            padding: 6px 12px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            position: absolute;
+            bottom: -10px;
+            left: -10px;
+            max-width: 120%;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            background: linear-gradient(to top, 
+                rgba(0,0,0,1) 0%, 
+                rgba(0,0,0,0.9) 30%, 
+                rgba(0,0,0,0.4) 60%, 
+                transparent 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px 30px;
+            box-sizing: border-box;
+        }
+
+        .meta-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .news-tags {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tag-category {
+            background: var(--brand-blue);
+            color: #000;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-radius: 4px;
+        }
+
+        .tag-type {
+            color: var(--brand-white);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-left: 2px solid var(--brand-blue);
+            padding-left: 10px;
+        }
+
+        .meta-info-text {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .headline {
+            font-size: 2.4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 0 0 15px 0;
+            color: var(--brand-white);
+            letter-spacing: -0.8px;
+            word-wrap: break-word;
+        }
+
+        .single-text-display {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--brand-white);
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            line-height: 1.4;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 25px;
+            font-weight: 400;
+        }
+
+        .footer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 15px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-icons i {
+            width: 16px;
+            height: 16px;
+            color: var(--brand-blue);
+        }
+
+        .brand-handle {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--brand-blue);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .brand-web {
+            font-size: 0.8rem;
+            color: var(--brand-white);
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        #actionButtons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            padding: 20px 24px;
+            box-sizing: border-box;
+            border-top: 1px solid #2a2a2a;
+            background: var(--card-bg);
+        }
+
+        .simple-btn {
+            padding: 12px 24px;
+            background: var(--brand-blue);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .outline-btn {
+            padding: 12px 24px;
+            background: transparent;
+            color: var(--brand-blue);
+            border: 1px solid var(--brand-blue);
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: flex-end;
+            align-items: stretch;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .sidebar-modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 340px;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: slideIn 0.3s ease-out;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .sidebar-modal h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--brand-blue);
+        }
+
+        .template-card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .template-card:hover {
+            border-color: var(--brand-blue);
+        }
+
+        .template-card.active {
+            border-color: var(--brand-blue);
+            background: #333;
+        }
+
+        .preview-box {
+            height: 100px;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 15px;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .preview-line {
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        .preview-line.title { width: 80%; background: var(--brand-blue); height: 8px; }
+        .preview-line.desc { width: 60%; }
+        .preview-line.meta { width: 30%; height: 2px; }
+
+        .template-info {
+            padding: 12px 15px;
+            flex-grow: 1;
+        }
+
+        .template-info b {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .template-info span {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .close-sidebar {
+            background: transparent;
+            border: none;
+            color: var(--brand-white);
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--brand-white);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 3000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            bottom: 40px;
+        }
+
+        .copyright-text {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            flex-shrink: 0;
+            background: var(--bg-dark);
+            z-index: 10;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                transform: translateX(0);
+            }
+            .sidebar.closed {
+                transform: translateX(-100%);
+            }
+            .mobile-only { display: flex; }
+            .hide-mobile { display: none; }
+        }
+
+        @media (min-width: 992px) {
+            .sidebar {
+                width: 340px;
+                flex-shrink: 0;
+            }
+            .sidebar.closed {
+                margin-left: -340px;
+            }
+            .mobile-only { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="templateModal" class="modal-overlay">
+        <div class="sidebar-modal">
+            <button class="close-sidebar" onclick="closeTemplateSelector()"><i data-lucide="x"></i></button>
+            <h2>Layout Templates</h2>
+            <div class="template-card active" id="card-DoubleText" onclick="setTemplate('DoubleText')">
+                <div class="preview-box">
+                    <div class="preview-line meta"></div>
+                    <div class="preview-line title"></div>
+                    <div class="preview-line desc"></div>
+                </div>
+                <div class="template-info">
+                    <b>DoubleText</b>
+                    <span>Separate title and description areas</span>
+                </div>
+            </div>
+            <div class="template-card" id="card-SingleText" onclick="setTemplate('SingleText')">
+                <div class="preview-box">
+                    <div class="preview-line meta"></div>
+                    <div style="height: 12px; width: 85%; background: rgba(255,255,255,0.4); border-radius: 2px;"></div>
+                </div>
+                <div class="template-info">
+                    <b>SingleText</b>
+                    <span>Single moderate-sized unified text area</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header class="studio-header">
+        <h1><span class="jamii-text">Jamii</span><span class="talk-text">Talk</span> <span class="studio-text">Poster Studio</span></h1>
+        <button id="sidebarToggle" class="simple-btn" style="padding: 8px 16px; font-size: 0.9rem; flex: none;">
+            <i data-lucide="menu" style="width: 18px; height: 18px;"></i> 
+            <span class="hide-mobile">Controls</span>
+        </button>
+    </header>
+
+    <div class="main-area">
+        <aside class="sidebar closed" id="controlSidebar">
+            <div class="sidebar-header mobile-only">
+                <h2>Controls</h2>
+                <button id="closeSidebar" style="background: transparent; border: none; color: var(--brand-white); cursor: pointer; padding: 8px;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="controls">
+                <div class="input-group">
+                    <label>Poster Background</label>
+                    <label for="imageInput" class="custom-file-upload">
+                        <i data-lucide="image"></i>
+                        Choose Image File
+                    </label>
+                    <input type="file" id="imageInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Photo Source</label>
+                    <input type="text" id="sourceInput" value="REUTERS">
+                </div>
+                <div class="input-group">
+                    <label>Category & Type</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="catInput" value="Politics" style="flex: 1;">
+                        <input type="text" id="typeInput" value="Update" style="flex: 1;">
+                    </div>
+                </div>
+                
+                <div id="doubleInputs">
+                    <div class="input-group">
+                        <label>Headline</label>
+                        <input type="text" id="headlineInput" value="Global Tech Summit 2026 Set to Open">
+                    </div>
+                    <div class="input-group">
+                        <label>Short Description</label>
+                        <textarea id="descInput" rows="3">Leaders from around the world gather to discuss the future of AI, connectivity, and sustainable innovation.</textarea>
+                    </div>
+                </div>
+
+                <div id="singleInput" style="display: none;">
+                    <div class="input-group">
+                        <label>Unified Content</label>
+                        <textarea id="unifiedInput" rows="4">Join us for the Global Tech Summit 2026 where world leaders redefine the future of technology and sustainable growth.</textarea>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Location & Date</label>
+                    <input type="text" id="metaInput" value="Dar es Salaam • Feb 21, 2026">
+                </div>
+            </div>
+            <div id="actionButtons">
+                <button class="outline-btn" onclick="openTemplateSelector()">
+                    <i data-lucide="layout"></i> Templates
+                </button>
+                <button class="simple-btn" id="exportBtn">
+                    <i data-lucide="download"></i> Export
+                </button>
+            </div>
+        </aside>
+
+        <div class="workspace-wrapper">
+            <main class="poster-area">
+                <div class="poster-scale-wrapper">
+                    <div id="poster-container">
+                        <img id="bg-preview" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1000">
+                        
+                        <div class="source-badge">
+                            <div class="source-rect-large">
+                                <div class="source-rect-small" id="sourceDisplay">REUTERS</div>
+                            </div>
+                        </div>
+
+                        <div id="brand-logo" class="logo-container">
+                            <img src="images/logo.png" alt="Logo">
+                        </div>
+
+                        <div class="overlay">
+                            <div class="meta-header-row">
+                                <div class="news-tags">
+                                    <div class="tag-category" id="catDisplay">Politics</div>
+                                    <div class="tag-type" id="typeDisplay">Update</div>
+                                </div>
+                                <div class="meta-info-text" id="metaDisplay">Dar es Salaam • Feb 21, 2026</div>
+                            </div>
+                            
+                            <div id="doubleDisplay">
+                                <h1 class="headline" id="headlineDisplay">Global Tech Summit 2026 Set to Open</h1>
+                                <p class="description" id="descDisplay">Leaders from around the world gather to discuss the future of AI, connectivity, and sustainable innovation.</p>
+                            </div>
+
+                            <div id="singleDisplay" class="single-text-display">
+                                Join us for the Global Tech Summit 2026 where world leaders redefine the future of technology and sustainable growth.
+                            </div>
+                            
+                            <div class="footer-row">
+                                <div class="footer-left">
+                                    <div class="social-icons">
+                                        <i data-lucide="facebook"></i>
+                                        <i data-lucide="instagram"></i>
+                                        <i data-lucide="twitter"></i>
+                                    </div>
+                                    <div class="brand-handle">
+                                        <span>@jamiitalk</span>
+                                    </div>
+                                </div>
+                                <div class="brand-web">www.jamiitalk.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <div class="copyright-text">© Jamiitalk 2026</div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentTemplate = 'DoubleText';
+
+        const imageInput = document.getElementById('imageInput');
+        const headlineInput = document.getElementById('headlineInput');
+        const descInput = document.getElementById('descInput');
+        const unifiedInput = document.getElementById('unifiedInput');
+        const metaInput = document.getElementById('metaInput');
+        const catInput = document.getElementById('catInput');
+        const typeInput = document.getElementById('typeInput');
+        const sourceInput = document.getElementById('sourceInput');
+        const exportBtn = document.getElementById('exportBtn');
+
+        const bgPreview = document.getElementById('bg-preview');
+        const headlineDisplay = document.getElementById('headlineDisplay');
+        const descDisplay = document.getElementById('descDisplay');
+        const singleDisplay = document.getElementById('singleDisplay');
+        const metaDisplay = document.getElementById('metaDisplay');
+        const catDisplay = document.getElementById('catDisplay');
+        const typeDisplay = document.getElementById('typeDisplay');
+        const sourceDisplay = document.getElementById('sourceDisplay');
+
+        const sidebar = document.getElementById('controlSidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const toast = document.getElementById('toast');
+
+        let lastWidth = window.innerWidth;
+        window.addEventListener('resize', () => {
+            if (lastWidth >= 992 && window.innerWidth < 992) {
+                sidebar.classList.add('closed');
+            } else if (lastWidth < 992 && window.innerWidth >= 992) {
+                sidebar.classList.remove('closed');
+            }
+            lastWidth = window.innerWidth;
+        });
+
+        if (window.innerWidth >= 992) {
+            sidebar.classList.remove('closed');
+        }
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.add('closed');
+        });
+
+        function showToast(message) {
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function setTemplate(type) {
+            currentTemplate = type;
+            
+            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`card-${type}`).classList.add('active');
+
+            if (type === 'DoubleText') {
+                document.getElementById('doubleInputs').style.display = 'block';
+                document.getElementById('singleInput').style.display = 'none';
+                document.getElementById('doubleDisplay').style.display = 'block';
+                document.getElementById('singleDisplay').style.display = 'none';
+            } else {
+                document.getElementById('doubleInputs').style.display = 'none';
+                document.getElementById('singleInput').style.display = 'block';
+                document.getElementById('doubleDisplay').style.display = 'none';
+                document.getElementById('singleDisplay').style.display = 'block';
+            }
+        }
+
+        function openTemplateSelector() {
+            document.getElementById('templateModal').style.display = 'flex';
+        }
+
+        function closeTemplateSelector() {
+            document.getElementById('templateModal').style.display = 'none';
+        }
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    bgPreview.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        headlineInput.addEventListener('input', () => headlineDisplay.innerText = headlineInput.value);
+        descInput.addEventListener('input', () => descDisplay.innerText = descInput.value);
+        unifiedInput.addEventListener('input', () => singleDisplay.innerText = unifiedInput.value);
+        metaInput.addEventListener('input', () => metaDisplay.innerText = metaInput.value);
+        catInput.addEventListener('input', () => catDisplay.innerText = catInput.value);
+        typeInput.addEventListener('input', () => typeDisplay.innerText = typeInput.value);
+        sourceInput.addEventListener('input', () => sourceDisplay.innerText = sourceInput.value);
+
+        exportBtn.addEventListener('click', () => {
+            if (currentTemplate === 'DoubleText' && (!headlineInput.value.trim() || !descInput.value.trim())) {
+                showToast('Headline and Description are required!');
+                return;
+            }
+            if (currentTemplate === 'SingleText' && !unifiedInput.value.trim()) {
+                showToast('Unified Content is required!');
+                return;
+            }
+
+            const container = document.getElementById('poster-container');
+            const originalTransform = container.style.transform;
+            
+            container.style.transform = 'scale(1)';
+
+            html2canvas(container, {
+                useCORS: true,
+                scale: 2,
+                backgroundColor: '#000000',
+                logging: false,
+                width: 500,
+                height: 625
+            }).then(canvas => {
+                container.style.transform = originalTransform;
+                const link = document.createElement('a');
+                link.download = `JamiiTalk-${currentTemplate}-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(() => {
+                container.style.transform = originalTransform;
+                showToast('Error exporting poster. Please try again.');
+            });
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('templateModal');
+            if (event.target == modal) {
+                closeTemplateSelector();
+            }
+        }
+    </script>
+</body>
+</html>
