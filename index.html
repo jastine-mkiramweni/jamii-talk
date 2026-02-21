@@ -1236,19 +1236,11 @@
                     }
 
                     const stream = exportCanvas.captureStream(30);
-                    const audioTrack = bgVideo.captureStream ? bgVideo.captureStream().getAudioTracks()[0] : null;
-                    if (audioTrack) {
-                        stream.addTrack(audioTrack);
-                    }
-                    const wasMuted = bgVideo.muted;
-                    bgVideo.muted = false; 
-
                     const recorder = new MediaRecorder(stream, { mimeType: mimeType });
                     const chunks = [];
 
                     recorder.ondataavailable = e => chunks.push(e.data);
                     recorder.onstop = () => {
-                        bgVideo.muted = wasMuted;
                         const blob = new Blob(chunks, { type: mimeType });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
