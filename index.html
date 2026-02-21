@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium News Poster Generator</title>
 
-<meta name="title" content="News Poster Generator">
+    <meta name="title" content="News Poster Generator">
 <meta name="description" content="Create beautiful and professional news posters easily. Perfect for social media updates and breaking news.">
 <link rel="icon" href="https://jastine-mkiramweni.github.io/jamii-talk/images/logo.png" type="image/png">
 <link rel="canonical" href="https://jastine-mkiramweni.github.io/jamii-talk/">
@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://jastine-mkiramweni.github.io/jamii-talk/images/banner.png">
 
 <meta name="theme-color" content="#ffffff">
-    
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -50,7 +50,7 @@
 
         @media (max-width: 600px) { :root { --poster-scale: 0.55; } }
         @media (min-width: 601px) and (max-width: 991px) { :root { --poster-scale: 0.75; } }
-        @media (min-width: 992px) { :root { --poster-scale: 0/9; } }
+        @media (min-width: 992px) { :root { --poster-scale: 0.9; } }
         @media (min-width: 992px) and (max-height: 850px) { :root { --poster-scale: 0.75; } }
         @media (min-width: 992px) and (max-height: 750px) { :root { --poster-scale: 0.65; } }
         @media (min-width: 992px) and (max-height: 650px) { :root { --poster-scale: 0.75; } }
@@ -125,6 +125,61 @@
             gap: 16px;
         }
 
+        .switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4a4a4a;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--brand-blue);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
         .input-group {
             display: flex;
             flex-direction: column;
@@ -192,6 +247,7 @@
 
         .poster-area {
             flex: 1;
+            min-height: 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -220,13 +276,19 @@
             transform-origin: top left;
         }
 
-        #bg-preview {
+        #bg-preview, #bg-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: 50% 50%;
             position: absolute;
             top: 0;
             left: 0;
+            cursor: grab;
+        }
+
+        #bg-preview:active, #bg-video:active {
+            cursor: grabbing;
         }
 
         .logo-container {
@@ -239,6 +301,7 @@
         .logo-container img {
             height: 45px;
             display: block;
+            transform-origin: center;
         }
 
         .source-badge {
@@ -288,6 +351,7 @@
             justify-content: flex-end;
             padding: 40px 30px;
             box-sizing: border-box;
+            pointer-events: none;
         }
 
         .meta-header-row {
@@ -330,6 +394,9 @@
             color: rgba(255,255,255,0.8);
             font-weight: 600;
             text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .headline {
@@ -400,6 +467,44 @@
             font-weight: 500;
         }
 
+        .swipe-indicator {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            z-index: 20;
+        }
+
+        .circle-layout {
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 320px;
+            height: 320px;
+            background: var(--brand-blue);
+            border-radius: 50%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 60px 70px 40px;
+            box-sizing: border-box;
+            text-align: center;
+            z-index: 20;
+        }
+
+        .circle-layout .circle-text {
+            color: #000;
+            font-weight: 800;
+            font-size: 1.1rem;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         #actionButtons {
             display: flex;
             gap: 15px;
@@ -463,20 +568,23 @@
             display: flex;
             flex-direction: column;
             gap: 24px;
-            animation: slideIn 0.3s ease-out;
-            overflow-y: auto;
             box-sizing: border-box;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
         }
 
         .sidebar-modal h2 {
             margin: 0;
             font-size: 1.5rem;
             color: var(--brand-blue);
+            flex-shrink: 0;
+        }
+
+        .template-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 8px;
         }
 
         .template-card {
@@ -489,6 +597,7 @@
             text-align: left;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
 
         .template-card:hover {
@@ -615,25 +724,66 @@
         <div class="sidebar-modal">
             <button class="close-sidebar" onclick="closeTemplateSelector()"><i data-lucide="x"></i></button>
             <h2>Layout Templates</h2>
-            <div class="template-card active" id="card-DoubleText" onclick="setTemplate('DoubleText')">
-                <div class="preview-box">
-                    <div class="preview-line meta"></div>
-                    <div class="preview-line title"></div>
-                    <div class="preview-line desc"></div>
+            <div class="template-list">
+                <div class="template-card active" id="card-DoubleText" onclick="setTemplate('DoubleText')">
+                    <div class="preview-box">
+                        <div class="preview-line meta"></div>
+                        <div class="preview-line title"></div>
+                        <div class="preview-line desc"></div>
+                    </div>
+                    <div class="template-info">
+                        <b>DoubleText</b>
+                        <span>Separate title and description areas</span>
+                    </div>
                 </div>
-                <div class="template-info">
-                    <b>DoubleText</b>
-                    <span>Separate title and description areas</span>
+                <div class="template-card" id="card-SingleText" onclick="setTemplate('SingleText')">
+                    <div class="preview-box">
+                        <div class="preview-line meta"></div>
+                        <div style="height: 12px; width: 85%; background: rgba(255,255,255,0.4); border-radius: 2px;"></div>
+                    </div>
+                    <div class="template-info">
+                        <b>SingleText</b>
+                        <span>Single moderate-sized unified text area</span>
+                    </div>
                 </div>
-            </div>
-            <div class="template-card" id="card-SingleText" onclick="setTemplate('SingleText')">
-                <div class="preview-box">
-                    <div class="preview-line meta"></div>
-                    <div style="height: 12px; width: 85%; background: rgba(255,255,255,0.4); border-radius: 2px;"></div>
+                <div class="template-card" id="card-Next5" onclick="setTemplate('Next5')">
+                    <div class="preview-box">
+                        <div class="preview-line meta" style="width: 40%;"></div>
+                        <div class="preview-line title"></div>
+                        <div class="preview-line desc"></div>
+                    </div>
+                    <div class="template-info">
+                        <b>Next 5</b>
+                        <span>Double text with next indicators</span>
+                    </div>
                 </div>
-                <div class="template-info">
-                    <b>SingleText</b>
-                    <span>Single moderate-sized unified text area</span>
+                <div class="template-card" id="card-Minimal" onclick="setTemplate('Minimal')">
+                    <div class="preview-box" style="justify-content: center;">
+                        <div style="height: 12px; width: 85%; background: rgba(255,255,255,0.4); border-radius: 2px;"></div>
+                    </div>
+                    <div class="template-info">
+                        <b>Minimal</b>
+                        <span>Only logo and text overlay</span>
+                    </div>
+                </div>
+                <div class="template-card" id="card-Swipe" onclick="setTemplate('Swipe')">
+                    <div class="preview-box" style="justify-content: center; position: relative;">
+                        <div style="height: 12px; width: 70%; background: rgba(255,255,255,0.4); border-radius: 2px;"></div>
+                        <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid var(--brand-white);"></div>
+                    </div>
+                    <div class="template-info">
+                        <b>Swipe</b>
+                        <span>Logo, text, and swipe caret</span>
+                    </div>
+                </div>
+                <div class="template-card" id="card-Circle" onclick="setTemplate('Circle')">
+                    <div class="preview-box" style="position: relative; background: #111;">
+                        <div style="position: absolute; bottom: -10px; right: -10px; width: 50px; height: 50px; background: var(--brand-blue); border-radius: 50%;"></div>
+                    </div>
+                    <div class="template-info">
+                        <b>Circle</b>
+                        <span>Logo and text in bottom right circle</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -656,11 +806,18 @@
                 </button>
             </div>
             <div class="controls">
+                <div class="switch-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="mediaToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="mediaToggleLabel" style="font-size: 0.85rem; font-weight: 600; color: var(--brand-white);">Image Poster</span>
+                </div>
                 <div class="input-group">
                     <label>Poster Background</label>
                     <label for="imageInput" class="custom-file-upload">
                         <i data-lucide="image"></i>
-                        Choose Image File
+                        Choose File
                     </label>
                     <input type="file" id="imageInput" accept="image/*">
                 </div>
@@ -682,7 +839,7 @@
                         <input type="text" id="headlineInput" value="Global Tech Summit 2026 Set to Open">
                     </div>
                     <div class="input-group">
-                        <label>Short Description</label>
+                        <label style="margin-top: 12px;">Short Description</label>
                         <textarea id="descInput" rows="3">Leaders from around the world gather to discuss the future of AI, connectivity, and sustainable innovation.</textarea>
                     </div>
                 </div>
@@ -696,7 +853,10 @@
 
                 <div class="input-group">
                     <label>Location & Date</label>
-                    <input type="text" id="metaInput" value="Dar es Salaam • Feb 21, 2026">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="locationInput" value="Dar es Salaam" style="flex: 1;">
+                        <input type="text" id="dateInput" value="Feb 21, 2026" style="flex: 1;">
+                    </div>
                 </div>
             </div>
             <div id="actionButtons">
@@ -713,9 +873,10 @@
             <main class="poster-area">
                 <div class="poster-scale-wrapper">
                     <div id="poster-container">
-                        <img id="bg-preview" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1000">
+                        <img id="bg-preview" crossorigin="anonymous" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1000">
+                        <video id="bg-video" loop muted autoplay playsinline style="display: none;"></video>
                         
-                        <div class="source-badge">
+                        <div class="source-badge" id="sourceBadge">
                             <div class="source-rect-large">
                                 <div class="source-rect-small" id="sourceDisplay">REUTERS</div>
                             </div>
@@ -725,13 +886,27 @@
                             <img src="images/logo.png" alt="Logo">
                         </div>
 
-                        <div class="overlay">
-                            <div class="meta-header-row">
+                        <div class="swipe-indicator" id="swipeIndicator">
+                            <i data-lucide="chevron-right" style="width: 40px; height: 40px; color: var(--brand-white);"></i>
+                        </div>
+
+                        <div class="circle-layout" id="circleLayout">
+                            <div class="circle-text" id="circleText">Join us for the Global Tech Summit 2026 where world leaders redefine the future of technology and sustainable growth.</div>
+                        </div>
+
+                        <div class="overlay" id="overlayGradient">
+                            <div class="meta-header-row" id="metaHeader">
                                 <div class="news-tags">
                                     <div class="tag-category" id="catDisplay">Politics</div>
                                     <div class="tag-type" id="typeDisplay">Update</div>
                                 </div>
-                                <div class="meta-info-text" id="metaDisplay">Dar es Salaam • Feb 21, 2026</div>
+                                <div class="meta-info-text">
+                                    <span id="metaDisplay">Dar es Salaam • Feb 21, 2026</span>
+                                    <div id="next5Carets" style="display: none; align-items: center;">
+                                        <i data-lucide="chevron-right" style="color: var(--brand-white); width: 16px; height: 16px;"></i>
+                                        <i data-lucide="chevron-right" style="color: var(--brand-blue); width: 16px; height: 16px; margin-left: -10px;"></i>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div id="doubleDisplay">
@@ -743,7 +918,7 @@
                                 Join us for the Global Tech Summit 2026 where world leaders redefine the future of technology and sustainable growth.
                             </div>
                             
-                            <div class="footer-row">
+                            <div class="footer-row" id="footerRow">
                                 <div class="footer-left">
                                     <div class="social-icons">
                                         <i data-lucide="facebook"></i>
@@ -768,18 +943,29 @@
         lucide.createIcons();
 
         let currentTemplate = 'DoubleText';
+        let bgPosX = 50;
+        let bgPosY = 50;
+        let isDragging = false;
+        let startX, startY;
+        let isVideoMode = false;
+
+        const mediaToggle = document.getElementById('mediaToggle');
+        const mediaToggleLabel = document.getElementById('mediaToggleLabel');
+        const posterContainer = document.getElementById('poster-container');
 
         const imageInput = document.getElementById('imageInput');
         const headlineInput = document.getElementById('headlineInput');
         const descInput = document.getElementById('descInput');
         const unifiedInput = document.getElementById('unifiedInput');
-        const metaInput = document.getElementById('metaInput');
+        const locationInput = document.getElementById('locationInput');
+        const dateInput = document.getElementById('dateInput');
         const catInput = document.getElementById('catInput');
         const typeInput = document.getElementById('typeInput');
         const sourceInput = document.getElementById('sourceInput');
         const exportBtn = document.getElementById('exportBtn');
 
         const bgPreview = document.getElementById('bg-preview');
+        const bgVideo = document.getElementById('bg-video');
         const headlineDisplay = document.getElementById('headlineDisplay');
         const descDisplay = document.getElementById('descDisplay');
         const singleDisplay = document.getElementById('singleDisplay');
@@ -787,6 +973,16 @@
         const catDisplay = document.getElementById('catDisplay');
         const typeDisplay = document.getElementById('typeDisplay');
         const sourceDisplay = document.getElementById('sourceDisplay');
+        const circleText = document.getElementById('circleText');
+
+        const sourceBadge = document.getElementById('sourceBadge');
+        const metaHeader = document.getElementById('metaHeader');
+        const footerRow = document.getElementById('footerRow');
+        const overlayGradient = document.getElementById('overlayGradient');
+        const brandLogo = document.getElementById('brand-logo');
+        const next5Carets = document.getElementById('next5Carets');
+        const swipeIndicator = document.getElementById('swipeIndicator');
+        const circleLayout = document.getElementById('circleLayout');
 
         const sidebar = document.getElementById('controlSidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
@@ -815,6 +1011,23 @@
             sidebar.classList.add('closed');
         });
 
+        mediaToggle.addEventListener('change', (e) => {
+            isVideoMode = e.target.checked;
+            if (isVideoMode) {
+                mediaToggleLabel.innerText = 'Video Poster';
+                posterContainer.classList.add('video-mode');
+                bgPreview.style.display = 'none';
+                bgVideo.style.display = 'block';
+                imageInput.accept = 'video/*';
+            } else {
+                mediaToggleLabel.innerText = 'Image Poster';
+                posterContainer.classList.remove('video-mode');
+                bgPreview.style.display = 'block';
+                bgVideo.style.display = 'none';
+                imageInput.accept = 'image/*';
+            }
+        });
+
         function showToast(message) {
             toast.innerText = message;
             toast.classList.add('show');
@@ -829,16 +1042,50 @@
             document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
             document.getElementById(`card-${type}`).classList.add('active');
 
+            sourceBadge.style.display = 'block';
+            metaHeader.style.display = 'flex';
+            footerRow.style.display = 'flex';
+            overlayGradient.style.background = 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.4) 60%, transparent 100%)';
+            brandLogo.style.display = 'block';
+            next5Carets.style.display = 'none';
+            swipeIndicator.style.display = 'none';
+            circleLayout.style.display = 'none';
+            
+            document.getElementById('doubleInputs').style.display = 'none';
+            document.getElementById('singleInput').style.display = 'none';
+            document.getElementById('doubleDisplay').style.display = 'none';
+            document.getElementById('singleDisplay').style.display = 'none';
+
             if (type === 'DoubleText') {
                 document.getElementById('doubleInputs').style.display = 'block';
-                document.getElementById('singleInput').style.display = 'none';
                 document.getElementById('doubleDisplay').style.display = 'block';
-                document.getElementById('singleDisplay').style.display = 'none';
-            } else {
-                document.getElementById('doubleInputs').style.display = 'none';
+            } else if (type === 'SingleText') {
                 document.getElementById('singleInput').style.display = 'block';
-                document.getElementById('doubleDisplay').style.display = 'none';
                 document.getElementById('singleDisplay').style.display = 'block';
+            } else if (type === 'Next5') {
+                document.getElementById('doubleInputs').style.display = 'block';
+                document.getElementById('doubleDisplay').style.display = 'block';
+                next5Carets.style.display = 'flex';
+            } else if (type === 'Minimal') {
+                document.getElementById('singleInput').style.display = 'block';
+                document.getElementById('singleDisplay').style.display = 'block';
+                sourceBadge.style.display = 'none';
+                metaHeader.style.display = 'none';
+                footerRow.style.display = 'none';
+            } else if (type === 'Swipe') {
+                document.getElementById('singleInput').style.display = 'block';
+                document.getElementById('singleDisplay').style.display = 'block';
+                sourceBadge.style.display = 'none';
+                metaHeader.style.display = 'none';
+                footerRow.style.display = 'none';
+                swipeIndicator.style.display = 'block';
+            } else if (type === 'Circle') {
+                document.getElementById('singleInput').style.display = 'block';
+                sourceBadge.style.display = 'none';
+                metaHeader.style.display = 'none';
+                footerRow.style.display = 'none';
+                overlayGradient.style.background = 'transparent';
+                circleLayout.style.display = 'flex';
             }
         }
 
@@ -850,57 +1097,285 @@
             document.getElementById('templateModal').style.display = 'none';
         }
 
+        [bgPreview, bgVideo].forEach(el => {
+            el.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+            el.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }, {passive: true});
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--poster-scale')) || 1;
+            
+            bgPosX -= (dx / scale) * 0.2;
+            bgPosY -= (dy / scale) * 0.2;
+            
+            bgPosX = Math.max(0, Math.min(100, bgPosX));
+            bgPosY = Math.max(0, Math.min(100, bgPosY));
+            
+            bgPreview.style.objectPosition = `${bgPosX}% ${bgPosY}%`;
+            bgVideo.style.objectPosition = `${bgPosX}% ${bgPosY}%`;
+            
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const dx = e.touches[0].clientX - startX;
+            const dy = e.touches[0].clientY - startY;
+            const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--poster-scale')) || 1;
+            
+            bgPosX -= (dx / scale) * 0.2;
+            bgPosY -= (dy / scale) * 0.2;
+            
+            bgPosX = Math.max(0, Math.min(100, bgPosX));
+            bgPosY = Math.max(0, Math.min(100, bgPosY));
+            
+            bgPreview.style.objectPosition = `${bgPosX}% ${bgPosY}%`;
+            bgVideo.style.objectPosition = `${bgPosX}% ${bgPosY}%`;
+            
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, {passive: true});
+
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
         imageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    bgPreview.src = event.target.result;
+                const url = URL.createObjectURL(file);
+                if (isVideoMode) {
+                    bgVideo.src = url;
+                } else {
+                    bgPreview.src = url;
                 }
-                reader.readAsDataURL(file);
+                bgPosX = 50;
+                bgPosY = 50;
+                bgPreview.style.objectPosition = '50% 50%';
+                bgVideo.style.objectPosition = '50% 50%';
             }
         });
 
+        function updateMeta() {
+            metaDisplay.innerText = `${locationInput.value} • ${dateInput.value}`;
+        }
+
         headlineInput.addEventListener('input', () => headlineDisplay.innerText = headlineInput.value);
         descInput.addEventListener('input', () => descDisplay.innerText = descInput.value);
-        unifiedInput.addEventListener('input', () => singleDisplay.innerText = unifiedInput.value);
-        metaInput.addEventListener('input', () => metaDisplay.innerText = metaInput.value);
+        unifiedInput.addEventListener('input', () => {
+            singleDisplay.innerText = unifiedInput.value;
+            circleText.innerText = unifiedInput.value;
+        });
+        locationInput.addEventListener('input', updateMeta);
+        dateInput.addEventListener('input', updateMeta);
         catInput.addEventListener('input', () => catDisplay.innerText = catInput.value);
         typeInput.addEventListener('input', () => typeDisplay.innerText = typeInput.value);
         sourceInput.addEventListener('input', () => sourceDisplay.innerText = sourceInput.value);
 
         exportBtn.addEventListener('click', () => {
-            if (currentTemplate === 'DoubleText' && (!headlineInput.value.trim() || !descInput.value.trim())) {
+            if ((currentTemplate === 'DoubleText' || currentTemplate === 'Next5') && (!headlineInput.value.trim() || !descInput.value.trim())) {
                 showToast('Headline and Description are required!');
                 return;
             }
-            if (currentTemplate === 'SingleText' && !unifiedInput.value.trim()) {
+            if ((currentTemplate === 'SingleText' || currentTemplate === 'Minimal' || currentTemplate === 'Swipe' || currentTemplate === 'Circle') && !unifiedInput.value.trim()) {
                 showToast('Unified Content is required!');
                 return;
             }
 
             const container = document.getElementById('poster-container');
             const originalTransform = container.style.transform;
-            
             container.style.transform = 'scale(1)';
 
-            html2canvas(container, {
-                useCORS: true,
-                scale: 2,
-                backgroundColor: '#000000',
-                logging: false,
-                width: 500,
-                height: 625
-            }).then(canvas => {
-                container.style.transform = originalTransform;
-                const link = document.createElement('a');
-                link.download = `JamiiTalk-${currentTemplate}-${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }).catch(() => {
-                container.style.transform = originalTransform;
-                showToast('Error exporting poster. Please try again.');
-            });
+            if (isVideoMode) {
+                if (!bgVideo.src) {
+                    showToast('Please select a video file first!');
+                    container.style.transform = originalTransform;
+                    return;
+                }
+
+                showToast('Generating Video... Please wait.');
+                
+                bgVideo.style.display = 'none';
+                container.style.background = 'transparent'; 
+
+                html2canvas(container, {
+                    useCORS: true,
+                    scale: 1,
+                    backgroundColor: null,
+                    logging: false,
+                    width: 500,
+                    height: 625
+                }).then(overlayCanvas => {
+                    bgVideo.style.display = 'block';
+                    container.style.background = '#000';
+                    
+                    const exportCanvas = document.createElement('canvas');
+                    exportCanvas.width = 500;
+                    exportCanvas.height = 625;
+                    const ctx = exportCanvas.getContext('2d');
+
+                    let mimeType = 'video/webm';
+                    if (MediaRecorder.isTypeSupported('video/mp4')) {
+                        mimeType = 'video/mp4';
+                    }
+
+                    const stream = exportCanvas.captureStream(30);
+                    const audioTrack = bgVideo.captureStream ? bgVideo.captureStream().getAudioTracks()[0] : null;
+                    if (audioTrack) {
+                        stream.addTrack(audioTrack);
+                    }
+                    const wasMuted = bgVideo.muted;
+                    bgVideo.muted = false; 
+
+                    const recorder = new MediaRecorder(stream, { mimeType: mimeType });
+                    const chunks = [];
+
+                    recorder.ondataavailable = e => chunks.push(e.data);
+                    recorder.onstop = () => {
+                        bgVideo.muted = wasMuted;
+                        const blob = new Blob(chunks, { type: mimeType });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `JamiiTalk-${currentTemplate}-${Date.now()}.mp4`;
+                        a.click();
+                        container.style.transform = originalTransform;
+                        showToast('Video Exported Successfully!');
+                    };
+
+                    recorder.start();
+                    const startTime = Date.now();
+                    const duration = Math.min((bgVideo.duration || 8) * 1000, 15000);
+                    let recording = true;
+
+                    function drawFrame() {
+                        if (!recording) return;
+
+                        ctx.clearRect(0, 0, 500, 625);
+
+                        const vidRatio = bgVideo.videoWidth / bgVideo.videoHeight;
+                        const containerRatio = 500 / 625;
+                        let drawWidth, drawHeight, offsetX, offsetY;
+                        
+                        if (vidRatio > containerRatio) {
+                            drawHeight = 625;
+                            drawWidth = bgVideo.videoWidth * (625 / bgVideo.videoHeight);
+                            offsetX = -((drawWidth - 500) * (bgPosX / 100));
+                            offsetY = 0;
+                        } else {
+                            drawWidth = 500;
+                            drawHeight = bgVideo.videoHeight * (500 / bgVideo.videoWidth);
+                            offsetX = 0;
+                            offsetY = -((drawHeight - 625) * (bgPosY / 100));
+                        }
+
+                        ctx.drawImage(bgVideo, offsetX, offsetY, drawWidth, drawHeight);
+                        ctx.drawImage(overlayCanvas, 0, 0, 500, 625);
+
+                        if (Date.now() - startTime < duration) {
+                            requestAnimationFrame(drawFrame);
+                        } else {
+                            recording = false;
+                            recorder.stop();
+                        }
+                    }
+
+                    drawFrame();
+                });
+
+            } else {
+                const originalSrc = bgPreview.src;
+                const originalObjPos = bgPreview.style.objectPosition;
+
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 500;
+                    canvas.height = 625;
+                    const ctx = canvas.getContext('2d');
+                    
+                    const imgRatio = bgPreview.naturalWidth / bgPreview.naturalHeight;
+                    const containerRatio = 500 / 625;
+                    
+                    let drawWidth, drawHeight, offsetX, offsetY;
+                    
+                    if (imgRatio > containerRatio) {
+                        drawHeight = 625;
+                        drawWidth = bgPreview.naturalWidth * (625 / bgPreview.naturalHeight);
+                        offsetX = -((drawWidth - 500) * (bgPosX / 100));
+                        offsetY = 0;
+                    } else {
+                        drawWidth = 500;
+                        drawHeight = bgPreview.naturalHeight * (500 / bgPreview.naturalWidth);
+                        offsetX = 0;
+                        offsetY = -((drawHeight - 625) * (bgPosY / 100));
+                    }
+                    
+                    ctx.drawImage(bgPreview, offsetX, offsetY, drawWidth, drawHeight);
+                    
+                    const croppedDataUrl = canvas.toDataURL('image/jpeg', 1.0);
+                    const tempImg = new Image();
+                    
+                    tempImg.onload = () => {
+                        bgPreview.src = croppedDataUrl;
+                        bgPreview.style.objectPosition = '0% 0%';
+                        
+                        html2canvas(container, {
+                            useCORS: true,
+                            scale: 2,
+                            backgroundColor: '#000000',
+                            logging: false,
+                            width: 500,
+                            height: 625
+                        }).then(canvas => {
+                            container.style.transform = originalTransform;
+                            bgPreview.src = originalSrc;
+                            bgPreview.style.objectPosition = originalObjPos;
+                            
+                            const link = document.createElement('a');
+                            link.download = `JamiiTalk-${currentTemplate}-${Date.now()}.png`;
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                        }).catch(() => {
+                            container.style.transform = originalTransform;
+                            bgPreview.src = originalSrc;
+                            bgPreview.style.objectPosition = originalObjPos;
+                            showToast('Error exporting poster. Please try again.');
+                        });
+                    };
+                    tempImg.src = croppedDataUrl;
+                } catch (e) {
+                    html2canvas(container, {
+                        useCORS: true,
+                        scale: 2,
+                        backgroundColor: '#000000',
+                        logging: false,
+                        width: 500,
+                        height: 625
+                    }).then(canvas => {
+                        container.style.transform = originalTransform;
+                        const link = document.createElement('a');
+                        link.download = `JamiiTalk-${currentTemplate}-${Date.now()}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    });
+                }
+            }
         });
 
         window.onclick = function(event) {
